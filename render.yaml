@@ -1,0 +1,14 @@
+# Exported from Render on 2024-07-30T03:43:50Z
+services:
+- type: web
+  name: kmabackend
+  runtime: node
+  repo: https://github.com/akglitch/kmabackend
+  plan: free
+  envVars:
+  - key: MONGO_URI
+    sync: false
+  region: oregon
+  buildCommand: npm install
+  startCommand: node index.js
+version: "1"
