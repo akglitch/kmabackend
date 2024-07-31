@@ -5,7 +5,7 @@ const addAppointee = async (req, res) => {
   try {
     const savedAppointee = await newAppointee.save();
     res.status(201).json(savedAppointee);
-  } catch (err) {
+  } catch (error) {
     res.status(400).json({ message: 'Error creating appointee' });
   }
 };

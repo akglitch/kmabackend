@@ -2,9 +2,10 @@ const Subcommittee = require('../model/Subcommittee');  // Ensure correct path t
 const AssemblyMember = require('../model/AssemblyMember');  // Ensure correct path to AssemblyMember model
 const GovernmentAppointee = require('../model/GovernmentAppointee');  // Ensure correct path to GovernmentAppointee model
 
+
 const subcommittees = ['Travel', 'Revenue', 'Transport'];
 
-const initializeSubcommittees = async (req, res) => {
+const initializeSubcommittees = async () => {
   try {
     for (const name of subcommittees) {
       const existingSubcommittee = await Subcommittee.findOne({ name });
@@ -12,12 +13,14 @@ const initializeSubcommittees = async (req, res) => {
         await Subcommittee.create({ name, members: [] });
       }
     }
-    res.status(200).send({ message: 'Subcommittees initialized successfully' });
+    console.log('Subcommittees initialized successfully');
   } catch (error) {
     console.error('Error initializing subcommittees:', error);
-    res.status(500).send({ message: 'Error initializing subcommittees' });
+    throw error; // Rethrow error to handle it in the calling function
   }
 };
+
+
 
 const getSubcommittees = async (req, res) => {
   try {

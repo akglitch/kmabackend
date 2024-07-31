@@ -9,3 +9,5 @@ router.get('/initialize', initializeSubcommittees);
 router.get('/subcommittees', getSubcommittees);
 
 module.exports = router;
+
+module.exports.initializeSubcommittees = initializeSubcommittees

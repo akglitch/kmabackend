@@ -1,7 +1,9 @@
 const express = require('express');
+const router = express.Router();
+
 const { addAppointee, getAppointees } = require('../controller/governmentAppointeesController');
 
-const router = express.Router();
+
 
 // Define routes
 router.post('/appointee', addAppointee);
