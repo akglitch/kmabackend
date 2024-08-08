@@ -5,13 +5,15 @@ const { Schema, model } = mongoose;
 const memberSchema = new Schema({
   memberId: { type: Schema.Types.ObjectId, required: true },
   memberType: { type: String, enum: ['AssemblyMember', 'GovernmentAppointee'], required: true },
-  name: { type: String, required: true }
+  name: { type: String, required: true },
+  meetingsAttended: { type: Number, default: 0 }, // Track meetings attended
+  totalAmount: { type: Number, default: 0 }, // Track total amount earned
 });
 
 // Define the schema for a Subcommittee
 const subcommitteeSchema = new Schema({
   name: { type: String, required: true },
-  members: [memberSchema]
+  members: [memberSchema],
 });
 
 // Create and export the Subcommittee model

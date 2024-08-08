@@ -20,6 +20,46 @@ const initializeSubcommittees = async () => {
   }
 };
 
+// Define the amount per meeting
+const amountPerMeeting = 100;
+
+const markAttendance = async (req, res) => {
+  const { subcommitteeId, memberId } = req.body;
+
+  try {
+    // Find the subcommittee by ID
+    const subcommittee = await Subcommittee.findById(subcommitteeId);
+    if (!subcommittee) {
+      return res.status(404).json({ message: 'Subcommittee not found' });
+    }
+
+    // Find the member within the subcommittee and update their attendance
+    const member = subcommittee.members.find(
+      (m) => m.memberId.toString() === memberId
+    );
+    if (!member) {
+      return res.status(404).json({ message: 'Member not found in subcommittee' });
+    }
+
+    // Increment the meetingsAttended
+    member.meetingsAttended = (member.meetingsAttended || 0) + 1;
+
+    // Calculate the total amount due for the member
+    const totalAmount = member.meetingsAttended * amountPerMeeting;
+
+    // Save the updated subcommittee document
+    await subcommittee.save();
+
+    res.status(200).json({ 
+      message: 'Attendance marked successfully', 
+      subcommittee,
+      totalAmount // Include the calculated amount in the response
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 
 
 const getSubcommittees = async (req, res) => {
@@ -55,19 +95,19 @@ const addMemberToSubcommittee = async (req, res) => {
       return;
     }
 
-    // Check if the member is already in any subcommittee
-    const existingSubcommittee = await Subcommittee.findOne({
+    // Check how many subcommittees the member is already in
+    const existingSubcommittees = await Subcommittee.find({
       'members.memberId': memberId,
     });
 
-    if (existingSubcommittee && existingSubcommittee.name !== subcommitteeName) {
-      res.status(400).send({ message: 'Member is already in another subcommittee' });
+    if (existingSubcommittees.length >= 2) {
+      res.status(400).send({ message: 'Member is already in 2 subcommittees' });
       return;
     }
 
     // Check if the member is already in the specified subcommittee
-    const isMemberAlreadyInSubcommittee = subcommittee.members.some(
-      (subMember) => subMember.memberId.toString() === memberId
+    const isMemberAlreadyInSubcommittee = existingSubcommittees.some(
+      (sub) => sub.name === subcommitteeName
     );
 
     if (isMemberAlreadyInSubcommittee) {
@@ -108,5 +148,6 @@ module.exports = {
   initializeSubcommittees,
   getSubcommittees,
   addMemberToSubcommittee,
-  searchMembers
+  searchMembers,
+  markAttendance,
 };

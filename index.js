@@ -7,6 +7,7 @@ const memberRoutes = require('./src/routes/memberRoutes');
 const connectDB = require('./src/config/db');
 const cors = require('cors');
 const routes = require('./src/routes');
+const authRoutes = require('./src/routes/auth');
 
 const {initializeSubcommittees}  = require('./src/routes/subcommitteeRoutes')
 
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use(cors());
 app.use(bodyParser.json());
 
+app.use('/api/auth', authRoutes);
 app.use('/api', routes);
 app.use('/api', assemblyMembersRoutes);
 app.use('/api', governmentAppointeeRoutes);
