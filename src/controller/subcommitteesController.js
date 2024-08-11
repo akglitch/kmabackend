@@ -33,7 +33,26 @@ const markAttendance = async (req, res) => {
       return res.status(404).json({ message: 'Subcommittee not found' });
     }
 
-    // Find the member within the subcommittee and update their attendance
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date();
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
+    // Check if attendance has already been marked today
+    const attendanceAlreadyMarked = subcommittee.attendance.some(record => 
+      record.memberId.toString() === memberId &&
+      record.date >= startOfDay &&
+      record.date <= endOfDay
+    );
+
+    if (attendanceAlreadyMarked) {
+      return res.status(400).json({ message: 'Attendance already marked for today' });
+    }
+
+    // Add new attendance record
+    subcommittee.attendance.push({ memberId, date: new Date() });
+
+    // Find the member within the subcommittee
     const member = subcommittee.members.find(
       (m) => m.memberId.toString() === memberId
     );
@@ -41,24 +60,26 @@ const markAttendance = async (req, res) => {
       return res.status(404).json({ message: 'Member not found in subcommittee' });
     }
 
-    // Increment the meetingsAttended
+    // Increment the meetingsAttended and calculate the total amount
     member.meetingsAttended = (member.meetingsAttended || 0) + 1;
-
-    // Calculate the total amount due for the member
-    const totalAmount = member.meetingsAttended * amountPerMeeting;
+    member.totalAmount = member.meetingsAttended * amountPerMeeting;
 
     // Save the updated subcommittee document
     await subcommittee.save();
 
-    res.status(200).json({ 
-      message: 'Attendance marked successfully', 
-      subcommittee,
-      totalAmount // Include the calculated amount in the response
+    res.status(200).json({
+      message: 'Attendance marked successfully',
+      member: {
+        meetingsAttended: member.meetingsAttended,
+        totalAmount: member.totalAmount
+      }
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+
 
 
 
@@ -78,11 +99,10 @@ const addMemberToSubcommittee = async (req, res) => {
     // Check if the subcommittee exists
     const subcommittee = await Subcommittee.findOne({ name: subcommitteeName });
     if (!subcommittee) {
-      res.status(404).send({ message: 'Subcommittee not found' });
-      return;
+      return res.status(404).send({ message: 'Subcommittee not found' });
     }
 
-    // Find the member
+    // Find the member based on memberType
     let member;
     if (memberType === 'AssemblyMember') {
       member = await AssemblyMember.findById(memberId);
@@ -91,8 +111,7 @@ const addMemberToSubcommittee = async (req, res) => {
     }
 
     if (!member) {
-      res.status(404).send({ message: 'Member not found' });
-      return;
+      return res.status(404).send({ message: 'Member not found' });
     }
 
     // Check how many subcommittees the member is already in
@@ -100,19 +119,18 @@ const addMemberToSubcommittee = async (req, res) => {
       'members.memberId': memberId,
     });
 
+    // Ensure the member is not in more than 2 subcommittees
     if (existingSubcommittees.length >= 2) {
-      res.status(400).send({ message: 'Member is already in 2 subcommittees' });
-      return;
+      return res.status(400).send({ message: 'Member is already in 2 subcommittees' });
     }
 
     // Check if the member is already in the specified subcommittee
-    const isMemberAlreadyInSubcommittee = existingSubcommittees.some(
-      (sub) => sub.name === subcommitteeName
+    const isMemberAlreadyInSubcommittee = subcommittee.members.some(
+      (sub) => sub.memberId.toString() === memberId && sub.memberType === memberType
     );
 
     if (isMemberAlreadyInSubcommittee) {
-      res.status(400).send({ message: 'Member is already in this subcommittee' });
-      return;
+      return res.status(400).send({ message: 'Member is already in this subcommittee' });
     }
 
     // Add the member to the subcommittee
@@ -125,6 +143,7 @@ const addMemberToSubcommittee = async (req, res) => {
     await subcommittee.save();
     res.status(200).send(subcommittee);
   } catch (error) {
+    console.error(error);
     res.status(500).send({ message: error.message });
   }
 };
