@@ -20,7 +20,6 @@ const initializeSubcommittees = async () => {
   }
 };
 
-// Define the amount per meeting
 const amountPerMeeting = 100;
 
 const markAttendance = async (req, res) => {
@@ -33,7 +32,7 @@ const markAttendance = async (req, res) => {
       return res.status(404).json({ message: 'Subcommittee not found' });
     }
 
-    // Find the member within the subcommittee and update their attendance
+    // Find the member within the subcommittee
     const member = subcommittee.members.find(
       (m) => m.memberId.toString() === memberId
     );
@@ -41,8 +40,19 @@ const markAttendance = async (req, res) => {
       return res.status(404).json({ message: 'Member not found in subcommittee' });
     }
 
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date().toISOString().slice(0, 10);
+
+    // Check if attendance was already marked today
+    if (member.lastAttendanceDate === today) {
+      return res.status(400).json({ message: 'Attendance already marked for today' });
+    }
+
     // Increment the meetingsAttended
     member.meetingsAttended = (member.meetingsAttended || 0) + 1;
+
+    // Set the lastAttendanceDate to today
+    member.lastAttendanceDate = today;
 
     // Calculate the total amount due for the member
     const totalAmount = member.meetingsAttended * amountPerMeeting;
@@ -78,11 +88,10 @@ const addMemberToSubcommittee = async (req, res) => {
     // Check if the subcommittee exists
     const subcommittee = await Subcommittee.findOne({ name: subcommitteeName });
     if (!subcommittee) {
-      res.status(404).send({ message: 'Subcommittee not found' });
-      return;
+      return res.status(404).send({ message: 'Subcommittee not found' });
     }
 
-    // Find the member
+    // Find the member based on memberType
     let member;
     if (memberType === 'AssemblyMember') {
       member = await AssemblyMember.findById(memberId);
@@ -91,8 +100,7 @@ const addMemberToSubcommittee = async (req, res) => {
     }
 
     if (!member) {
-      res.status(404).send({ message: 'Member not found' });
-      return;
+      return res.status(404).send({ message: 'Member not found' });
     }
 
     // Check how many subcommittees the member is already in
@@ -100,19 +108,18 @@ const addMemberToSubcommittee = async (req, res) => {
       'members.memberId': memberId,
     });
 
+    // Ensure the member is not in more than 2 subcommittees
     if (existingSubcommittees.length >= 2) {
-      res.status(400).send({ message: 'Member is already in 2 subcommittees' });
-      return;
+      return res.status(400).send({ message: 'Member is already in 2 subcommittees' });
     }
 
     // Check if the member is already in the specified subcommittee
-    const isMemberAlreadyInSubcommittee = existingSubcommittees.some(
-      (sub) => sub.name === subcommitteeName
+    const isMemberAlreadyInSubcommittee = subcommittee.members.some(
+      (sub) => sub.memberId.toString() === memberId && sub.memberType === memberType
     );
 
     if (isMemberAlreadyInSubcommittee) {
-      res.status(400).send({ message: 'Member is already in this subcommittee' });
-      return;
+      return res.status(400).send({ message: 'Member is already in this subcommittee' });
     }
 
     // Add the member to the subcommittee
@@ -125,6 +132,7 @@ const addMemberToSubcommittee = async (req, res) => {
     await subcommittee.save();
     res.status(200).send(subcommittee);
   } catch (error) {
+    console.error(error);
     res.status(500).send({ message: error.message });
   }
 };
