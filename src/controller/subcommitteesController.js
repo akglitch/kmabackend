@@ -20,6 +20,7 @@ const initializeSubcommittees = async () => {
   }
 };
 
+// Define the amount per meeting
 const amountPerMeeting = 100;
 
 const markAttendance = async (req, res) => {
@@ -32,6 +33,25 @@ const markAttendance = async (req, res) => {
       return res.status(404).json({ message: 'Subcommittee not found' });
     }
 
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date();
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
+    // Check if attendance has already been marked today
+    const attendanceAlreadyMarked = subcommittee.attendance.some(record => 
+      record.memberId.toString() === memberId &&
+      record.date >= startOfDay &&
+      record.date <= endOfDay
+    );
+
+    if (attendanceAlreadyMarked) {
+      return res.status(400).json({ message: 'Attendance already marked for today' });
+    }
+
+    // Add new attendance record
+    subcommittee.attendance.push({ memberId, date: new Date() });
+
     // Find the member within the subcommittee
     const member = subcommittee.members.find(
       (m) => m.memberId.toString() === memberId
@@ -40,35 +60,26 @@ const markAttendance = async (req, res) => {
       return res.status(404).json({ message: 'Member not found in subcommittee' });
     }
 
-    // Get today's date in YYYY-MM-DD format
-    const today = new Date().toISOString().slice(0, 10);
-
-    // Check if attendance was already marked today
-    if (member.lastAttendanceDate === today) {
-      return res.status(400).json({ message: 'Attendance already marked for today' });
-    }
-
-    // Increment the meetingsAttended
+    // Increment the meetingsAttended and calculate the total amount
     member.meetingsAttended = (member.meetingsAttended || 0) + 1;
-
-    // Set the lastAttendanceDate to today
-    member.lastAttendanceDate = today;
-
-    // Calculate the total amount due for the member
-    const totalAmount = member.meetingsAttended * amountPerMeeting;
+    member.totalAmount = member.meetingsAttended * amountPerMeeting;
 
     // Save the updated subcommittee document
     await subcommittee.save();
 
-    res.status(200).json({ 
-      message: 'Attendance marked successfully', 
-      subcommittee,
-      totalAmount // Include the calculated amount in the response
+    res.status(200).json({
+      message: 'Attendance marked successfully',
+      member: {
+        meetingsAttended: member.meetingsAttended,
+        totalAmount: member.totalAmount
+      }
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+
 
 
 
