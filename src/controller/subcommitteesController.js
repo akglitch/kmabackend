@@ -87,27 +87,21 @@ const markAttendance = async (req, res) => {
 
 
 const getAttendanceReport = async (req, res) => {
-  const { subcommitteeId } = req.params;
-
   try {
-    // Find the subcommittee by ID
-    const subcommittee = await Subcommittee.findById(subcommitteeId);
-    if (!subcommittee) {
-      return res.status(404).json({ message: 'Subcommittee not found' });
-    }
+    const subcommittees = await Subcommittee.find();
+    
+    const reportData = subcommittees.map(subcommittee => ({
+      subcommitteeName: subcommittee.name,
+      members: subcommittee.members.map(member => ({
+        name: member.name,
+        meetingsAttended: member.meetingsAttended,
+        totalAmount: member.totalAmount
+      }))
+    }));
 
-    // Extract attendance records and calculate amounts
-    const attendanceReport = subcommittee.attendance.map((record) => {
-      const member = subcommittee.members.find(m => m.memberId.toString() === record.memberId.toString());
-      return {
-        name: member ? member.name : 'Unknown',
-        amount: amountPerMeeting, // Assuming each attendance record corresponds to one meeting
-      };
-    });
-
-    res.status(200).json(attendanceReport);
+    res.status(200).json(reportData);
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Error generating report', error: error.message });
   }
 };
 

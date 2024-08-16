@@ -8,8 +8,9 @@ router.post('/subcommittees/addmember', addMemberToSubcommittee);
 router.get('/initialize', initializeSubcommittees);
 router.get('/subcommittees', getSubcommittees);
 router.post('/attendance', markAttendance); // New route for marking attendance
-router.get('/attendance/report',getAttendanceReport)
+router.get('/report',getAttendanceReport)
 
 module.exports = router;
 
 module.exports.initializeSubcommittees = initializeSubcommittees
+
