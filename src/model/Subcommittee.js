@@ -17,11 +17,22 @@ const attendanceSchema = new Schema({
   date: { type: Date, default: Date.now }
 });
 
+// Define the schema for attendance records
+const attendanceSchema = new Schema({
+  memberId: { type: Schema.Types.ObjectId, required: true },
+  date: { type: Date, default: Date.now }
+});
+
+// Define the schema for attendance records
+const attendanceSchema = new Schema({
+  memberId: { type: Schema.Types.ObjectId, required: true },
+  date: { type: Date, default: Date.now }
+});
+
 // Define the schema for a Subcommittee
 const subcommitteeSchema = new Schema({
   name: { type: String, required: true },
   members: [memberSchema],
-  attendance: [attendanceSchema], // Track attendance records
 });
 
 // Create and export the Subcommittee model
