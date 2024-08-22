@@ -1,13 +1,13 @@
-
-const AssemblyMember = require('../model/AssemblyMember'); // Adjust the import path according to your project structure
+const AssemblyMember = require('../model/AssemblyMember');
 
 const createMember = async (req, res) => {
-  const newMember = new AssemblyMember(req.body);
+  const { name, contact, gender, electoralArea, isConvener } = req.body;
+  const newMember = new AssemblyMember({ name, contact, gender, electoralArea, isConvener });
   try {
     const savedMember = await newMember.save();
     res.status(201).json(savedMember);
   } catch (error) {
-    console.error('Error creating record:', error); // Log the error details
+    console.error('Error creating record:', error);
     res.status(400).json({ message: 'Error creating record', error: error.message });
   }
 };
