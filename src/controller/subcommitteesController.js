@@ -2,7 +2,6 @@ const Subcommittee = require('../model/Subcommittee');  // Ensure correct path t
 const AssemblyMember = require('../model/AssemblyMember');  // Ensure correct path to AssemblyMember model
 const GovernmentAppointee = require('../model/GovernmentAppointee');  // Ensure correct path to GovernmentAppointee model
 
-
 const subcommittees = ['Travel', 'Revenue', 'Transport'];
 
 const initializeSubcommittees = async () => {
@@ -22,23 +21,21 @@ const initializeSubcommittees = async () => {
 
 // Define the amount per meeting
 const amountPerMeeting = 100;
+const convenerBonus = 50;
 
 const markAttendance = async (req, res) => {
   const { subcommitteeId, memberId } = req.body;
 
   try {
-    // Find the subcommittee by ID
     const subcommittee = await Subcommittee.findById(subcommitteeId);
     if (!subcommittee) {
       return res.status(404).json({ message: 'Subcommittee not found' });
     }
 
-    // Get today's date in YYYY-MM-DD format
     const today = new Date();
     const startOfDay = new Date(today.setHours(0, 0, 0, 0));
     const endOfDay = new Date(today.setHours(23, 59, 59, 999));
 
-    // Check if attendance has already been marked today
     const attendanceAlreadyMarked = subcommittee.attendance.some(record => 
       record.memberId.toString() === memberId &&
       record.date >= startOfDay &&
@@ -49,10 +46,8 @@ const markAttendance = async (req, res) => {
       return res.status(400).json({ message: 'Attendance already marked for today' });
     }
 
-    // Add new attendance record
     subcommittee.attendance.push({ memberId, date: new Date() });
 
-    // Find the member within the subcommittee
     const member = subcommittee.members.find(
       (m) => m.memberId.toString() === memberId
     );
@@ -60,11 +55,11 @@ const markAttendance = async (req, res) => {
       return res.status(404).json({ message: 'Member not found in subcommittee' });
     }
 
-    // Increment the meetingsAttended and calculate the total amount
     member.meetingsAttended = (member.meetingsAttended || 0) + 1;
-    member.totalAmount = member.meetingsAttended * amountPerMeeting;
 
-    // Save the updated subcommittee document
+    const additionalConvenerBonus = member.isConvener ? convenerBonus : 0;
+    member.totalAmount = (member.meetingsAttended * amountPerMeeting) + additionalConvenerBonus;
+
     await subcommittee.save();
 
     res.status(200).json({
@@ -79,32 +74,25 @@ const markAttendance = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
 const getAttendanceReport = async (req, res) => {
   try {
     const subcommittees = await Subcommittee.find();
     
-    const reportData = subcommittees.map(subcommittee => ({
-      subcommitteeName: subcommittee.name,
-      members: subcommittee.members.map(member => ({
+    const reportData = subcommittees.flatMap(subcommittee => 
+      subcommittee.members.map(member => ({
+        subcommitteeName: subcommittee.name,
         name: member.name,
         meetingsAttended: member.meetingsAttended,
-        totalAmount: member.totalAmount
+        totalAmount: member.totalAmount,
+        isConvener: member.isConvener, // Ensure this field is present in your schema
       }))
-    }));
+    );
 
     res.status(200).json(reportData);
   } catch (error) {
     res.status(500).json({ message: 'Error generating report', error: error.message });
   }
 };
-
 
 const getSubcommittees = async (req, res) => {
   try {
@@ -116,7 +104,7 @@ const getSubcommittees = async (req, res) => {
 };
 
 const addMemberToSubcommittee = async (req, res) => {
-  const { subcommitteeName, memberId, memberType } = req.body;
+  const { subcommitteeName, memberId, memberType, isConvener } = req.body;
 
   try {
     // Check if the subcommittee exists
@@ -156,11 +144,20 @@ const addMemberToSubcommittee = async (req, res) => {
       return res.status(400).send({ message: 'Member is already in this subcommittee' });
     }
 
+    // If adding a convener, ensure no other member is marked as convener
+    if (isConvener) {
+      const existingConvener = subcommittee.members.find((m) => m.isConvener);
+      if (existingConvener) {
+        return res.status(400).send({ message: 'There is already a convener in this subcommittee' });
+      }
+    }
+
     // Add the member to the subcommittee
     subcommittee.members.push({
       memberId,
       memberType,
       name: member.name,
+      isConvener: isConvener || false, // Set convener status
     });
 
     await subcommittee.save();
@@ -170,7 +167,7 @@ const addMemberToSubcommittee = async (req, res) => {
     res.status(500).send({ message: error.message });
   }
 };
-
+ 
 const searchMembers = async (req, res) => {
   const { contact } = req.query;
 
