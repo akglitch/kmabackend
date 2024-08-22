@@ -1,7 +1,8 @@
 const GovernmentAppointee = require('../model/GovernmentAppointee');
 
 const addAppointee = async (req, res) => {
-  const newAppointee = new GovernmentAppointee(req.body);
+  const {  name, contact, gender, electoralArea, isConvener } = req.body;
+  const newAppointee = new GovernmentAppointee({  name, contact, gender, electoralArea, isConvener });
   try {
     const savedAppointee = await newAppointee.save();
     res.status(201).json(savedAppointee);
