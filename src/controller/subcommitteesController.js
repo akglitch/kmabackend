@@ -1,7 +1,7 @@
 const Subcommittee = require('../model/Subcommittee');  // Ensure correct path to Subcommittee model
 const AssemblyMember = require('../model/AssemblyMember');  // Ensure correct path to AssemblyMember model
 const GovernmentAppointee = require('../model/GovernmentAppointee');  // Ensure correct path to GovernmentAppointee model
-
+const { amountPerMeeting, convenerBonus } = require('../config/constants');
 
 const subcommittees = ['Travel', 'Revenue', 'Transport'];
 
@@ -20,25 +20,26 @@ const initializeSubcommittees = async () => {
   }
 };
 
-// Define the amount per meeting
-const amountPerMeeting = 100;
-
 const markAttendance = async (req, res) => {
-  const { subcommitteeId, memberId } = req.body;
+  const { subcommitteeId, memberId, convener } = req.body;
 
   try {
-    // Find the subcommittee by ID
     const subcommittee = await Subcommittee.findById(subcommitteeId);
     if (!subcommittee) {
       return res.status(404).json({ message: 'Subcommittee not found' });
     }
 
-    // Get today's date in YYYY-MM-DD format
+    const member = subcommittee.members.find(
+      (m) => m.memberId.toString() === memberId
+    );
+    if (!member) {
+      return res.status(404).json({ message: 'Member not found in subcommittee' });
+    }
+
     const today = new Date();
     const startOfDay = new Date(today.setHours(0, 0, 0, 0));
     const endOfDay = new Date(today.setHours(23, 59, 59, 999));
 
-    // Check if attendance has already been marked today
     const attendanceAlreadyMarked = subcommittee.attendance.some(record => 
       record.memberId.toString() === memberId &&
       record.date >= startOfDay &&
@@ -49,58 +50,66 @@ const markAttendance = async (req, res) => {
       return res.status(400).json({ message: 'Attendance already marked for today' });
     }
 
-    // Add new attendance record
-    subcommittee.attendance.push({ memberId, date: new Date() });
+    if (convener) {
+      // Check if the member is a convener in any other subcommittee
+      const otherSubcommittees = await Subcommittee.find({
+        _id: { $ne: subcommitteeId },
+        'members.memberId': memberId,
+        'members.isConvener': true,
+      });
 
-    // Find the member within the subcommittee
-    const member = subcommittee.members.find(
-      (m) => m.memberId.toString() === memberId
-    );
-    if (!member) {
-      return res.status(404).json({ message: 'Member not found in subcommittee' });
+      if (otherSubcommittees.length > 0) {
+        return res.status(400).json({ message: 'Member is already a convener in another subcommittee' });
+      }
+
+      member.isConvener = true;
+    } else {
+      member.isConvener = false;
     }
 
-    // Increment the meetingsAttended and calculate the total amount
-    member.meetingsAttended = (member.meetingsAttended || 0) + 1;
-    member.totalAmount = member.meetingsAttended * amountPerMeeting;
+    // Add attendance record
+    subcommittee.attendance.push({ memberId, date: new Date() });
 
-    // Save the updated subcommittee document
+    // Update member stats
+    member.meetingsAttended = (member.meetingsAttended || 0) + 1;
+    member.totalAmount = member.meetingsAttended * amountPerMeeting +
+      (member.isConvener ? convenerBonus : 0);
+
     await subcommittee.save();
 
     res.status(200).json({
       message: 'Attendance marked successfully',
       member: {
         meetingsAttended: member.meetingsAttended,
-        totalAmount: member.totalAmount
-      }
+        totalAmount: member.totalAmount,
+      },
     });
   } catch (error) {
+    console.error("Error in markAttendance:", error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
-
-
-
-
-
-
-
 const getAttendanceReport = async (req, res) => {
   try {
     const subcommittees = await Subcommittee.find();
-    
+    console.log("Fetched subcommittees:", subcommittees); // Debugging log
+
     const reportData = subcommittees.map(subcommittee => ({
       subcommitteeName: subcommittee.name,
       members: subcommittee.members.map(member => ({
         name: member.name,
-        meetingsAttended: member.meetingsAttended,
-        totalAmount: member.totalAmount
+        meetingsAttended: member.meetingsAttended || 0,
+        totalAmount: member.totalAmount || 0,
+        isConvener: member.isConvener || false
       }))
     }));
 
+    console.log("Report data:", reportData); // Debugging log
+
     res.status(200).json(reportData);
   } catch (error) {
+    console.error("Error generating report:", error); // Debugging log
     res.status(500).json({ message: 'Error generating report', error: error.message });
   }
 };
