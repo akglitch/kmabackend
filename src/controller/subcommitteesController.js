@@ -20,6 +20,22 @@ const initializeSubcommittees = async () => {
   }
 };
 
+const getTotalAttendance = async (req, res) => {
+  try {
+    const subcommittees = await Subcommittee.find();
+    let totalAttendance = 0;
+
+    subcommittees.forEach(subcommittee => {
+      totalAttendance += subcommittee.attendance.length;
+    });
+
+    res.status(200).json({ total: totalAttendance });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching total attendance', error: error.message });
+  }
+};
+
+
 const markAttendance = async (req, res) => {
   const { subcommitteeId, memberId, convener } = req.body;
 
@@ -200,6 +216,7 @@ module.exports = {
   getSubcommittees,
   addMemberToSubcommittee,
   searchMembers,
+  getTotalAttendance,
   markAttendance,
   getAttendanceReport,
 };

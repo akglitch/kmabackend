@@ -20,7 +20,17 @@ const getAppointees = async (req, res) => {
   }
 };
 
+const getTotalGovernmentAppointees = async (req, res) => {
+  try {
+    const totalAppointees = await GovernmentAppointee.countDocuments();
+    res.status(200).json({ total: totalAppointees });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching total government appointees', error: error.message });
+  }
+};
+
 module.exports = {
   addAppointee,
+  getTotalGovernmentAppointees,
   getAppointees
 };
