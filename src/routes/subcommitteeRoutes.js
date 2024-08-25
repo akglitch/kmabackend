@@ -9,7 +9,7 @@ router.get('/initialize', initializeSubcommittees);
 router.get('/subcommittees', getSubcommittees);
 router.post('/attendance', markAttendance); // New route for marking attendance
 router.get('/attendance/total',getTotalAttendance)
-router.get('/report',)
+router.get('/report',getAttendanceReport)
 
 module.exports = router;
 
