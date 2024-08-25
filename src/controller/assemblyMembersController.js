@@ -21,7 +21,18 @@ const getMembers = async (req, res) => {
   }
 };
 
+const getTotalAssemblyMembers = async (req, res) => {
+  try {
+    const totalMembers = await AssemblyMember.countDocuments();
+    res.status(200).json({ total: totalMembers });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching total assembly members', error: error.message });
+  }
+};
+
+
 module.exports = {
   createMember,
+  getTotalAssemblyMembers,
   getMembers
 };
