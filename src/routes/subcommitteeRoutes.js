@@ -1,16 +1,14 @@
 const express = require('express');
-const { searchMembers, markAttendance,getTotalAttendance,getAttendanceReport, addMemberToSubcommittee, initializeSubcommittees, getSubcommittees } = require('../controller/subcommitteesController');
+const { searchMembers,deleteMemberFromSubcommittee,addMemberToSubcommittee, initializeSubcommittees, getSubcommittees } = require('../controller/subcommitteesController');
 
 const router = express.Router();
 
-router.post('/search', searchMembers);
+// Routes for subcommittees and members
+router.get('/initialize',initializeSubcommittees);
+router.get('/subcommittees',getSubcommittees);
 router.post('/subcommittees/addmember', addMemberToSubcommittee);
-router.get('/initialize', initializeSubcommittees);
-router.get('/subcommittees', getSubcommittees);
-router.post('/attendance', markAttendance); // New route for marking attendance
-router.get('/attendance/total',getTotalAttendance)
-router.get('/report',getAttendanceReport)
-
+router.delete('/subcommittees/:subcommitteeId/members/:memberId', deleteMemberFromSubcommittee);
+router.post('/search', searchMembers);
 module.exports = router;
 
 module.exports.initializeSubcommittees = initializeSubcommittees
