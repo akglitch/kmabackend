@@ -8,6 +8,7 @@ const connectDB = require('./src/config/db');
 const cors = require('cors');
 const routes = require('./src/routes');
 const authRoutes = require('./src/routes/auth');
+const attendanceRoutes = require('./src/routes/attendanceRoutes');
 
 const {initializeSubcommittees}  = require('./src/routes/subcommitteeRoutes')
 
@@ -27,6 +28,7 @@ app.use('/api', assemblyMembersRoutes);
 app.use('/api', governmentAppointeeRoutes);
 app.use('/api', subcommitteesRoutes);
 app.use('/api', memberRoutes);
+app.use('/api',attendanceRoutes)
 
 const PORT = process.env.PORT;
 
