@@ -1,5 +1,5 @@
 const express = require('express');
-const { searchMembers, deleteMember, editMember } = require('../controller/membersController');
+const { searchMembers, deleteMember, editMember } = require('../controllers/membersController');
 
 const router = express.Router();
 
