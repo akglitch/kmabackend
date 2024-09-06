@@ -1,7 +1,7 @@
 const express = require('express');
 
 const router = express.Router();
-const {markAttendance,getAttendanceReport,getTotalAttendance} = require('../controller/attendanceController');
+const {markAttendance,getAttendanceReport,getTotalAttendance} = require('../controllers/attendanceController');
 
 
 // Routes for attendance

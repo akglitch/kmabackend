@@ -9,6 +9,8 @@ const cors = require('cors');
 const routes = require('./src/routes');
 const authRoutes = require('./src/routes/auth');
 const attendanceRoutes = require('./src/routes/attendanceRoutes');
+const generalMeetingRoutes = require('./src/routes/generalMeetingRoutes')
+const convenerMeetingRoutes = require('./src/routes/convenerMeetingRoutes')
 
 const {initializeSubcommittees}  = require('./src/routes/subcommitteeRoutes')
 
@@ -29,6 +31,8 @@ app.use('/api', governmentAppointeeRoutes);
 app.use('/api', subcommitteesRoutes);
 app.use('/api', memberRoutes);
 app.use('/api',attendanceRoutes)
+app.use('/api',generalMeetingRoutes)
+app.use('/api',convenerMeetingRoutes)
 
 const PORT = process.env.PORT;
 

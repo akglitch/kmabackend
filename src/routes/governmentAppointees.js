@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { addAppointee, getAppointees,getTotalGovernmentAppointees } = require('../controller/governmentAppointeesController');
+const { addAppointee, getAppointees,getTotalGovernmentAppointees } = require('../controllers/governmentAppointeesController');
 
 
 

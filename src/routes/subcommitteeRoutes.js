@@ -1,5 +1,5 @@
 const express = require('express');
-const { searchMembers,deleteMemberFromSubcommittee,addMemberToSubcommittee, initializeSubcommittees, getSubcommittees } = require('../controller/subcommitteesController');
+const { searchMembers,deleteMemberFromSubcommittee,addMemberToSubcommittee, initializeSubcommittees, getSubcommittees } = require('../controllers/subcommitteesController');
 
 const router = express.Router();
 
