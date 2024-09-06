@@ -38,24 +38,35 @@ const recordConvenerMeetingAttendance = async (req, res) => {
 };
 const fetchConvenerAttendanceReport = async (req, res) => {
   try {
-    // Fetch attendance records and populate member details
+    // Fetch attendance records and populate memberId with either AssemblyMember or GovernmentAppointee
     const attendanceRecords = await ConvenerMeetingAttendance.find()
-      .populate('memberId', 'name'); // Ensure that memberId is being populated correctly
+      .populate({
+        path: 'memberId',
+        model: 'AssemblyMember'||'GovernmentAppointee', // Specify the model here (AssemblyMember or GovernmentAppointee)
+        select: 'name', // Populate only the name field
+      })
+      .catch(err => {
+        console.error('Error during population:', err.message, err.stack);
+        return res.status(500).send({ message: 'Error during population' });
+      });
 
-    // Map the results to the desired format
+    if (!attendanceRecords || attendanceRecords.length === 0) {
+      return res.status(404).json({ message: 'No attendance records found' });
+    }
+
     const reportData = attendanceRecords.map(record => ({
-      name: record.memberId ? record.memberId.name : 'Unknown', // Handle cases where memberId might not be populated
+      name: record.memberId ? record.memberId.name : 'Unknown',
       attended: record.attended ? 'Present' : 'Absent',
       timestamp: record.timestamp,
     }));
 
-    // Send the report data as a JSON response
     res.status(200).json(reportData);
   } catch (error) {
-    console.error('Error fetching attendance report:', error);
+    console.error('Error fetching attendance report:', error.message, error.stack);
     res.status(500).send({ message: 'An error occurred while fetching the attendance report' });
   }
 };
+
 const fetchConveners = async (req, res) => {
   try {
     // Fetch all Assembly Members who are conveners
