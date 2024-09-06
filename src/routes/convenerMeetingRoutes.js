@@ -6,7 +6,7 @@ const { recordConvenerMeetingAttendance,fetchConvenerAttendanceReport,fetchConve
 
 router.post('/convener-meeting/attendance', recordConvenerMeetingAttendance);
 router.get('/conveners', fetchConveners);
-router.get('/', fetchConvenerAttendanceReport);
+router.get('/execoreport', fetchConvenerAttendanceReport);
 
 
 
