@@ -32,13 +32,13 @@ const addMemberToSubcommittee = async (req, res) => {
   const { subcommitteeName, memberId, memberType, isConvener } = req.body;
 
   try {
-    // Find the subcommittee by name
+    // Step 1: Find the subcommittee by name
     const subcommittee = await Subcommittee.findOne({ name: subcommitteeName });
     if (!subcommittee) {
       return res.status(404).send({ message: 'Subcommittee not found' });
     }
 
-    // Retrieve the member based on their type
+    // Step 2: Retrieve the member based on their type
     let member;
     if (memberType === 'AssemblyMember') {
       member = await AssemblyMember.findById(memberId);
@@ -50,59 +50,60 @@ const addMemberToSubcommittee = async (req, res) => {
       return res.status(404).send({ message: 'Member not found' });
     }
 
-    // Fetch all subcommittees the member is part of
+    // Step 3: Fetch all subcommittees the member is part of
     const existingSubcommittees = await Subcommittee.find({
       'members.memberId': memberId,
     });
 
-    // Check if the member is already a convener in any subcommittee
+    // Step 4: Check if the member is already in two subcommittees
+    if (existingSubcommittees.length >= 2) {
+      return res.status(400).send({
+        message: 'A member can only be part of a maximum of two subcommittees',
+      });
+    }
+
+    // Step 5: Check if the member is already a convener in another subcommittee
     const existingSubcommitteesWithConvener = existingSubcommittees.filter(sub =>
       sub.members.some(m => m.memberId.toString() === memberId && m.isConvener)
     );
 
-    // Restrict being a convener to only one subcommittee
-    if (isConvener && existingSubcommitteesWithConvener.length > 0) {
-      return res.status(400).send({ message: 'A convener can only be a convener in one subcommittee' });
-    }
-
-    // Ensure no other convener is in this subcommittee
-    const existingConvener = subcommittee.members.some(
-      m => m.isConvener
-    );
-
-    if (isConvener && existingConvener) {
-      return res.status(400).send({ message: 'This subcommittee already has a convener' });
-    }
-
-    // If the member is already a convener in another subcommittee, make them an ordinary member here
+    // Step 6: Ensure they are only a convener in one subcommittee
+    let updatedIsConvener = isConvener;
     if (existingSubcommitteesWithConvener.length > 0) {
-      isConvener = false;
+      updatedIsConvener = false; // Force them to be a regular member in the second subcommittee
     }
 
-    // Check if the member is already part of this subcommittee
+    // Step 7: Ensure no other convener exists in this subcommittee if they are being added as a convener
+    const existingConvener = subcommittee.members.some(m => m.isConvener);
+    if (updatedIsConvener && existingConvener) {
+      return res.status(400).send({
+        message: 'This subcommittee already has a convener',
+      });
+    }
+
+    // Step 8: Prevent the same member from being added twice to the same subcommittee
     const isMemberAlreadyInSubcommittee = subcommittee.members.some(
       (m) => m.memberId.toString() === memberId && m.memberType === memberType
     );
-
     if (isMemberAlreadyInSubcommittee) {
       return res.status(400).send({ message: 'Member is already in this subcommittee' });
     }
 
-    // Add the member to the subcommittee with the appropriate role
+    // Step 9: Add the member to the subcommittee, marking them as convener or regular member
     subcommittee.members.push({
       memberId,
       memberType,
       name: member.name,
-      isConvener, // Convener flag will be false if already a convener elsewhere
+      isConvener: updatedIsConvener, // Updated convener flag (only true if no other convener role exists)
     });
 
-    // Save the updated subcommittee
+    // Step 10: Save the updated subcommittee
     await subcommittee.save();
 
     res.status(200).send(subcommittee);
   } catch (error) {
     console.error('Error in addMemberToSubcommittee:', error);
-    res.status(500).send({ message: 'An unexpected error occurred' });
+    res.status(500).send({ message: 'An unexpected error occurred', error: error.message });
   }
 };
 
