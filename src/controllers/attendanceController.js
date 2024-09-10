@@ -39,7 +39,7 @@ const markAttendance = async (req, res) => {
     const attendance = new Attendance({
       memberId,
       subcommitteeId,
-      date: new Date()
+      date: new Date(),
     });
     await attendance.save();
 
@@ -50,9 +50,9 @@ const markAttendance = async (req, res) => {
 
     await subcommittee.save();
 
-    // Adjust convener status in other subcommittees
+    // Adjust convener status only in other subcommittees, not in their own
     const otherSubcommittees = await Subcommittee.find({
-      _id: { $ne: subcommitteeId },
+      _id: { $ne: subcommitteeId }, // Other subcommittees
       'members.memberId': memberId,
     });
 
@@ -62,7 +62,7 @@ const markAttendance = async (req, res) => {
       );
 
       if (otherMember && otherMember.isConvener) {
-        otherMember.isConvener = false;
+        otherMember.isConvener = false; // Remove convener status in other subcommittees
         await otherSubcommittee.save();
       }
     }
@@ -80,6 +80,8 @@ const markAttendance = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+
 
 const getAttendanceReport = async (req, res) => {
   try {
