@@ -13,10 +13,10 @@ const markAttendance = async (req, res) => {
     }
 
     // Find the member within the subcommittee
-    const member = subcommittee.members.find(
+    const memberInSubcommittee = subcommittee.members.find(
       (m) => m.memberId.toString() === memberId
     );
-    if (!member) {
+    if (!memberInSubcommittee) {
       return res.status(404).json({ message: 'Member not found in subcommittee' });
     }
 
@@ -43,27 +43,27 @@ const markAttendance = async (req, res) => {
     });
     await attendance.save();
 
-    // Update the member's meeting attendance count and total amount
-    member.meetingsAttended = (member.meetingsAttended || 0) + 1;
-    member.totalAmount = member.meetingsAttended * amountPerMeeting +
-      (member.isConvener ? convenerBonus : 0);
+    // Update the member's meeting attendance count and total amount in the current subcommittee
+    memberInSubcommittee.meetingsAttended = (memberInSubcommittee.meetingsAttended || 0) + 1;
+    memberInSubcommittee.totalAmount = memberInSubcommittee.meetingsAttended * amountPerMeeting +
+      (memberInSubcommittee.isConvener ? convenerBonus : 0);
 
     await subcommittee.save();
 
-    // Adjust convener status only in other subcommittees, not in their own
-    const otherSubcommittees = await Subcommittee.find({
-      _id: { $ne: subcommitteeId }, // Other subcommittees
+    // Find all subcommittees where this member is involved
+    const allSubcommittees = await Subcommittee.find({
       'members.memberId': memberId,
     });
 
-    for (const otherSubcommittee of otherSubcommittees) {
-      const otherMember = otherSubcommittee.members.find(
+    for (const sub of allSubcommittees) {
+      const memberInOtherSubcommittee = sub.members.find(
         (m) => m.memberId.toString() === memberId
       );
 
-      if (otherMember && otherMember.isConvener) {
-        otherMember.isConvener = false; // Remove convener status in other subcommittees
-        await otherSubcommittee.save();
+      if (memberInOtherSubcommittee && memberInOtherSubcommittee.isConvener) {
+        // Preserve convener status in subcommittees where the member is a convener
+        memberInOtherSubcommittee.isConvener = true; // Ensure convener status is not changed
+        await sub.save();
       }
     }
 
@@ -71,8 +71,8 @@ const markAttendance = async (req, res) => {
     res.status(200).json({
       message: 'Attendance marked successfully',
       member: {
-        meetingsAttended: member.meetingsAttended,
-        totalAmount: member.totalAmount,
+        meetingsAttended: memberInSubcommittee.meetingsAttended,
+        totalAmount: memberInSubcommittee.totalAmount,
       },
     });
   } catch (error) {
@@ -80,6 +80,7 @@ const markAttendance = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
 
 
 
