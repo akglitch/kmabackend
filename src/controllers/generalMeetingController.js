@@ -61,12 +61,34 @@ const fetchAllMembers = async (req, res) => {
 const generateAttendanceReport = async (req, res) => {
   try {
     const attendanceRecords = await GeneralMeetingAttendance.find({});
-    res.status(200).json(attendanceRecords);
+
+    // Fetch names based on memberId type (AssemblyMember or GovernmentAppointee)
+    const populatedRecords = await Promise.all(
+      attendanceRecords.map(async (record) => {
+        let member = await AssemblyMember.findById(record.memberId);
+
+        if (!member) {
+          member = await GovernmentAppointee.findById(record.memberId);
+        }
+
+        if (member) {
+          return {
+            ...record.toObject(),
+            name: member.name, // Add the member's name to the response
+          };
+        }
+
+        return record.toObject(); // Return as is if no member found
+      })
+    );
+
+    res.status(200).json(populatedRecords);
   } catch (error) {
     console.error('Error generating attendance report:', error);
     res.status(500).send({ message: 'An error occurred while generating the report' });
   }
 };
+
 
 module.exports = {
   recordGeneralMeetingAttendance,

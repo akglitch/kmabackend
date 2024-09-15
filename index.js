@@ -7,10 +7,10 @@ const memberRoutes = require('./src/routes/memberRoutes');
 const connectDB = require('./src/config/db');
 const cors = require('cors');
 const routes = require('./src/routes');
-const authRoutes = require('./src/routes/auth');
 const attendanceRoutes = require('./src/routes/attendanceRoutes');
 const generalMeetingRoutes = require('./src/routes/generalMeetingRoutes')
 const convenerMeetingRoutes = require('./src/routes/convenerMeetingRoutes')
+const userRoutes = require('./src/routes/userRoutes')
 
 const {initializeSubcommittees}  = require('./src/routes/subcommitteeRoutes')
 
@@ -24,7 +24,15 @@ app.use(express.json());
 app.use(cors());
 app.use(bodyParser.json());
 
-app.use('/api/auth', authRoutes);
+
+app.use(cors({
+  origin: 'http://localhost:3000', // Replace with your frontend URL
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));  
+
+
 app.use('/api', routes);
 app.use('/api', assemblyMembersRoutes);
 app.use('/api', governmentAppointeeRoutes);
@@ -33,6 +41,7 @@ app.use('/api', memberRoutes);
 app.use('/api',attendanceRoutes)
 app.use('/api',generalMeetingRoutes)
 app.use('/api',convenerMeetingRoutes)
+app.use('/api',userRoutes)
 
 const PORT = process.env.PORT;
 
