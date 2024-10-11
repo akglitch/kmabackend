@@ -36,16 +36,37 @@ exports.getMeetingById = async (req, res) => {
 };
 
 // Update meeting minutes
-exports.updateMeetingMinutes = async (req, res) => {
+exports.updateMeeting = async (req, res) => {
   try {
-    const { minutes } = req.body;
+    const { minutes, title, date } = req.body; // Example fields
     const meeting = await Meeting.findById(req.params.id);
-    if (!meeting) return res.status(404).json({ success: false, message: 'Meeting not found' });
 
-    meeting.minutes = minutes;
+    if (!meeting) {
+      return res.status(404).json({ success: false, message: 'Meeting not found' });
+    }
+
+    meeting.title = title || meeting.title;
+    meeting.minutes = minutes || meeting.minutes;
+    meeting.date = date || meeting.date;
+
     await meeting.save();
-    res.status(200).json({ success: true, message: 'Minutes updated successfully', meeting });
+    res.status(200).json({ success: true, message: 'Meeting updated successfully', meeting });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Server Error', error: err.message });
+    res.status(400).json({ success: false, message: 'Error updating meeting', error: err.message });
   }
 };
+
+exports.deleteMeeting = async (req, res) => {
+  try {
+    const meeting = await Meeting.findById(req.params.id);
+    if (!meeting) {
+      return res.status(404).json({ success: false, message: 'Meeting not found' });
+    }
+
+    await meeting.remove();
+    res.status(200).json({ success: true, message: 'Meeting deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error deleting meeting', error: err.message });
+  }
+};
+
