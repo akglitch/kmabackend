@@ -10,7 +10,7 @@ router.post('/create', meetingsController.createMeeting);
 
 // Route to get all meetings
 // GET /api/meetings
-router.get('/', meetingsController.getAllMeetings);
+router.get('/meetings', meetingsController.getAllMeetings);
 
 // Route to get a specific meeting by its ID
 // GET /api/meetings/:id
