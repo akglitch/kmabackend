@@ -42,7 +42,7 @@ app.use('/api',attendanceRoutes)
 app.use('/api',generalMeetingRoutes)
 app.use('/api',convenerMeetingRoutes)
 app.use('/api',userRoutes)
-app.use('/api/meetings', meetingRoutes);
+app.use('/api', meetingRoutes);
 
 const PORT = process.env.PORT;
 

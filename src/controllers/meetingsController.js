@@ -1,11 +1,10 @@
-// controllers/meetingsController.js
 const Meeting = require('../models/Meeting');
 
 // Create a new meeting
 exports.createMeeting = async (req, res) => {
   try {
-    const { title, date, attendees, minutes, createdBy } = req.body;
-    const meeting = new Meeting({ title, date, attendees, minutes, createdBy });
+    const { title, date, minutes, createdBy } = req.body;  // Removed `attendees`
+    const meeting = new Meeting({ title, date, minutes, createdBy });
     await meeting.save();
     res.status(201).json({ success: true, message: 'Meeting created successfully', meeting });
   } catch (err) {
@@ -17,8 +16,7 @@ exports.createMeeting = async (req, res) => {
 exports.getAllMeetings = async (req, res) => {
   try {
     const meetings = await Meeting.find()
-      .populate('attendees', 'name email')
-      .populate('createdBy', 'name');
+      .populate('createdBy', 'name');  // Removed `attendees`
     res.status(200).json({ success: true, meetings });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Server Error', error: err.message });
@@ -29,8 +27,7 @@ exports.getAllMeetings = async (req, res) => {
 exports.getMeetingById = async (req, res) => {
   try {
     const meeting = await Meeting.findById(req.params.id)
-      .populate('attendees', 'name email')
-      .populate('createdBy', 'name');
+      .populate('createdBy', 'name');  // Removed `attendees`
     if (!meeting) return res.status(404).json({ success: false, message: 'Meeting not found' });
     res.status(200).json({ success: true, meeting });
   } catch (err) {
