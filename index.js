@@ -11,7 +11,7 @@ const attendanceRoutes = require('./src/routes/attendanceRoutes');
 const generalMeetingRoutes = require('./src/routes/generalMeetingRoutes')
 const convenerMeetingRoutes = require('./src/routes/convenerMeetingRoutes')
 const userRoutes = require('./src/routes/userRoutes')
-const meetingRoutes = require('./src/routes/meetingsRoutes')
+
 const {initializeSubcommittees}  = require('./src/routes/subcommitteeRoutes')
 
 connectDB().then(() => {
@@ -42,7 +42,7 @@ app.use('/api',attendanceRoutes)
 app.use('/api',generalMeetingRoutes)
 app.use('/api',convenerMeetingRoutes)
 app.use('/api',userRoutes)
-app.use('/api', meetingRoutes);
+
 
 const PORT = process.env.PORT;
 
