@@ -26,6 +26,7 @@ app.use(bodyParser.json());
 
 
 app.use(cors({
+
   origin: 'https://kmaapp.vercel.app', // Replace with your frontend URL
   credentials: true,
    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
