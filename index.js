@@ -11,7 +11,7 @@ const attendanceRoutes = require('./src/routes/attendanceRoutes');
 const generalMeetingRoutes = require('./src/routes/generalMeetingRoutes')
 const convenerMeetingRoutes = require('./src/routes/convenerMeetingRoutes')
 const userRoutes = require('./src/routes/userRoutes')
-
+const meetingRoutes = require('./src/routes/meetingsRoutes')
 const {initializeSubcommittees}  = require('./src/routes/subcommitteeRoutes')
 
 connectDB().then(() => {
@@ -26,12 +26,11 @@ app.use(bodyParser.json());
 
 
 app.use(cors({
- origin: 'https://kmaapp.vercel.app', // Replace with your frontend URL
+  origin: 'https://kmaapp.vercel.app', // Replace with your frontend URL
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));  
-
+   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+   allowedHeaders: ['Content-Type', 'Authorization']
+ }));  
 
 app.use('/api', routes);
 app.use('/api', assemblyMembersRoutes);
@@ -42,6 +41,7 @@ app.use('/api',attendanceRoutes)
 app.use('/api',generalMeetingRoutes)
 app.use('/api',convenerMeetingRoutes)
 app.use('/api',userRoutes)
+app.use('/api/meetings', meetingRoutes);
 
 const PORT = process.env.PORT;
 
