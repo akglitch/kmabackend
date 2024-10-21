@@ -4,17 +4,11 @@ const Subcommittee = require('../models/Subcommittee');
 
 // Search members by contact
 const searchMembers = async (req, res) => {
-  const { query } = req.query;
+  const { contact } = req.query;
 
   try {
-    // Use $or operator to search for either name or contact that matches the query
-    const assemblyMembers = await AssemblyMember.find({
-      $or: [{ contact: { $regex: query, $options: 'i' } }, { name: { $regex: query, $options: 'i' } }]
-    });
-
-    const governmentAppointees = await GovernmentAppointee.find({
-      $or: [{ contact: { $regex: query, $options: 'i' } }, { name: { $regex: query, $options: 'i' } }]
-    });
+    const assemblyMembers = await AssemblyMember.find({ contact: { $regex: contact, $options: 'i' } });
+    const governmentAppointees = await GovernmentAppointee.find({ contact: { $regex: contact, $options: 'i' } });
 
     // Add memberType to each member
     const assemblyMembersWithMemberType = assemblyMembers.map(member => ({
@@ -34,7 +28,6 @@ const searchMembers = async (req, res) => {
     res.status(500).json({ message: 'Error searching members', error });
   }
 };
-
 
 const deleteMember = async (req, res) => {
   const { memberType, memberId } = req.params;
