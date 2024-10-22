@@ -16,28 +16,27 @@ const registerUser = async (req, res) => {
   };
 
 
-const loginUser = async (req, res) => {
-  const { username, password } = req.body;
-
-  try {
-    const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+  const loginUser = async (req, res) => {
+    const { username, password } = req.body;
+  
+    try {
+      const user = await User.findOne({ username });
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+  
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+  
+      const token = jwt.sign({ userId: user._id, username: user.username }, 'yourSecretKey', { expiresIn: '1h' });
+      res.json({ token, username: user.username }); // Include username in the response
+    } catch (error) {
+      res.status(500).json({ message: 'Error logging in', error });
     }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    const token = jwt.sign({ userId: user._id }, 'yourSecretKey', { expiresIn: '1h' });
-    res.json({ token });
-  } catch (error) {
-    res.status(500).json({ message: 'Error logging in', error });
-  }
-};
-
-
+  };
+  
 
 
 module.exports = {
