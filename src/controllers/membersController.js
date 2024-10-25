@@ -2,6 +2,32 @@ const AssemblyMember = require('../models/AssemblyMember');
 const GovernmentAppointee = require('../models/GovernmentAppointee');
 const Subcommittee = require('../models/Subcommittee');
 
+
+
+const fetchAllMembers = async (req, res) => {
+  try {
+    // Fetch all assembly members and government appointees
+    const assemblyMembers = await AssemblyMember.find();
+    const governmentAppointees = await GovernmentAppointee.find();
+
+    // Add memberType to each member for identification
+    const assemblyMembersWithMemberType = assemblyMembers.map(member => ({
+      ...member.toObject(),
+      memberType: 'AssemblyMember',
+    }));
+    const governmentAppointeesWithMemberType = governmentAppointees.map(member => ({
+      ...member.toObject(),
+      memberType: 'GovernmentAppointee',
+    }));
+
+    // Combine the results
+    const members = [...assemblyMembersWithMemberType, ...governmentAppointeesWithMemberType];
+    res.status(200).json(members);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching all members', error });
+  }
+};
+
 // Search members by contact
 const searchMembers = async (req, res) => {
   const { contact } = req.query;
@@ -86,6 +112,7 @@ const editMember = async (req, res) => {
 };
 
 module.exports = {
+  fetchAllMembers,
   searchMembers,
   deleteMember,
   editMember

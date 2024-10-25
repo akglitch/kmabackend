@@ -1,8 +1,10 @@
 const express = require('express');
-const { searchMembers, deleteMember, editMember } = require('../controllers/membersController');
+const { searchMembers, deleteMember,fetchAllMembers, editMember } = require('../controllers/membersController');
 
 const router = express.Router();
 
+// Fetch all members
+router.get('/all', fetchAllMembers);
 // Search members by contact
 router.get('/search', searchMembers);
 
