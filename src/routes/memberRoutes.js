@@ -4,7 +4,7 @@ const { searchMembers, deleteMember,fetchAllMembers, editMember } = require('../
 const router = express.Router();
 
 // Fetch all members
-router.get('/all', fetchAllMembers);
+router.get('/allmembers', fetchAllMembers);
 // Search members by contact
 router.get('/search', searchMembers);
 
