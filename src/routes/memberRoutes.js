@@ -1,5 +1,5 @@
 const express = require('express');
-const { searchMembers, deleteMember,fetchAllMembers, editMember } = require('../controllers/membersController');
+const { searchMembers, deleteAllAttendance,deleteMember,fetchAllMembers, editMember } = require('../controllers/membersController');
 
 const router = express.Router();
 
@@ -8,6 +8,8 @@ router.get('/allmembers', fetchAllMembers);
 // Search members by contact
 router.get('/search', searchMembers);
 
+router.delete('/attendance/deleteAll', attendanceController.deleteAllAttendance);
+
 // Delete a member by ID
 router.delete('/members/:memberType/:memberId', deleteMember);
 
@@ -15,3 +17,4 @@ router.delete('/members/:memberType/:memberId', deleteMember);
 router.put('/:memberType/:id', editMember);
 
 module.exports = router;
+   
