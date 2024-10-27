@@ -122,7 +122,20 @@ const getTotalAttendance = async (req, res) => {
   }
 };
 
+
+const deleteAllAttendance = async (req, res) => {
+  try {
+    await Attendance.deleteMany({}); // Delete all documents in the Attendance collection
+    res.status(200).json({ message: 'All attendance records have been deleted successfully' });
+  } catch (error) {
+    console.error("Error deleting attendance records:", error);
+    res.status(500).json({ message: 'Error deleting attendance records', error: error.message });
+  }
+};
+
+
 module.exports = {
+  deleteAllAttendance,
   markAttendance,
   getAttendanceReport,
   getTotalAttendance,
