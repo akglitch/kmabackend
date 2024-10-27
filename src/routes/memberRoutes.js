@@ -8,7 +8,7 @@ router.get('/allmembers', fetchAllMembers);
 // Search members by contact
 router.get('/search', searchMembers);
 
-router.delete('/attendance/deleteAll', attendanceController.deleteAllAttendance);
+router.delete('/attendance/deleteAll',deleteAllAttendance);
 
 // Delete a member by ID
 router.delete('/members/:memberType/:memberId', deleteMember);
