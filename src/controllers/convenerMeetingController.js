@@ -95,7 +95,25 @@ const fetchConveners = async (req, res) => {
     res.status(500).send({ message: 'An error occurred while fetching conveners' });
   }
 };
+
+
+
+const deleteAllAttendanceRecords = async (req, res) => {
+  try {
+    const result = await ConvenerMeetingAttendance.deleteMany({});
+    res.status(200).send({
+      message: 'All attendance records deleted successfully',
+      deletedCount: result.deletedCount,
+    });
+  } catch (error) {
+    console.error('Error deleting attendance records:', error);
+    res.status(500).send({ message: 'An error occurred while deleting attendance records' });
+  }
+};
+
+
 module.exports = {
+  deleteAllAttendanceRecords,
   recordConvenerMeetingAttendance,
   fetchConveners,
   fetchConvenerAttendanceReport
