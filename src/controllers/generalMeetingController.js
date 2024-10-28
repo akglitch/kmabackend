@@ -89,8 +89,19 @@ const generateAttendanceReport = async (req, res) => {
   }
 };
 
+const deleteAllGeneralMeetingAttendance = async (req, res) => {
+  try {
+    await GeneralMeetingAttendance.deleteMany({}); // Deletes all records
+    res.status(200).json({ message: 'All general meeting attendance records deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting all attendance records:', error);
+    res.status(500).json({ message: 'An error occurred while deleting all attendance records' });
+  }
+};
+
 
 module.exports = {
+  deleteAllGeneralMeetingAttendance,
   recordGeneralMeetingAttendance,
   fetchAllMembers,
   generateAttendanceReport,
