@@ -9,7 +9,7 @@ router.get('/generalmembers', fetchAllMembers);
 router.get('/generalreport', generateAttendanceReport);
 router.delete('/generalMeeting/attendance/deleteAll', deleteAllGeneralMeetingAttendance);
 router.get('/members/total', getTotalMemberCount);
-router.get('/general/count', getTotalMemberCount);
+router.get('/general/count', getTotalGeneralAttendance);
 
 
 
