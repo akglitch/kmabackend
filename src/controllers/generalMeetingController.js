@@ -46,6 +46,32 @@ const recordGeneralMeetingAttendance = async (req, res) => {
     res.status(500).json({ message: 'An error occurred while recording general meeting attendance' });
   }
 };
+
+
+const getTotalMemberCount = async (req, res) => {
+  try {
+    // Get counts of each member type
+    const assemblyMemberCount = await AssemblyMember.countDocuments();
+    const governmentAppointeeCount = await GovernmentAppointee.countDocuments();
+    
+    // Sum counts for total
+    const totalMemberCount = assemblyMemberCount + governmentAppointeeCount;
+
+    // Return response with the total count
+    res.status(200).json({ 
+      totalMembers: totalMemberCount,
+      details: {
+        assemblyMembers: assemblyMemberCount,
+        governmentAppointees: governmentAppointeeCount
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching total member count:', error);
+    res.status(500).json({ message: 'An error occurred while fetching the total member count' });
+  }
+};  
+
+
 const fetchAllMembers = async (req, res) => {
   try {
     const assemblyMembers = await AssemblyMember.find({});
@@ -99,8 +125,21 @@ const deleteAllGeneralMeetingAttendance = async (req, res) => {
   }
 };
 
+const getTotalGeneralAttendance = async (req, res) => {
+  try {
+    // Count the number of attendance records where 'attended' is true
+    const totalAttendanceCount = await GeneralMeetingAttendance.countDocuments({ attended: true });
+    
+    res.status(200).json({ totalAttendance: totalAttendanceCount });
+  } catch (error) {
+    console.error('Error fetching total general meeting attendance:', error);
+    res.status(500).json({ message: 'An error occurred while fetching total general meeting attendance' });
+  }
+};
 
 module.exports = {
+  getTotalGeneralAttendance,
+  getTotalMemberCount,
   deleteAllGeneralMeetingAttendance,
   recordGeneralMeetingAttendance,
   fetchAllMembers,

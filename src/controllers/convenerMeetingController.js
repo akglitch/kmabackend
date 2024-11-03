@@ -96,23 +96,45 @@ const fetchConveners = async (req, res) => {
   }
 };
 
+const getTotalConveners = async (req, res) => {
+  try {
+    const assemblyConvenersCount = await AssemblyMember.countDocuments({ isConvener: true });
+    const governmentConvenersCount = await GovernmentAppointee.countDocuments({ isConvener: true });
 
+    const totalConveners = assemblyConvenersCount + governmentConvenersCount;
+    res.status(200).json({ totalConveners });
+  } catch (error) {
+    console.error('Error fetching total conveners:', error);
+    res.status(500).send({ message: 'An error occurred while fetching the total number of conveners' });
+  }
+};
 
 const deleteAllAttendanceRecords = async (req, res) => {
   try {
-    const result = await ConvenerMeetingAttendance.deleteMany({});
-    res.status(200).send({
-      message: 'All attendance records deleted successfully',
-      deletedCount: result.deletedCount,
-    });
+    await ConvenerMeetingAttendance.deleteMany({}); // Deletes all records
+    res.status(200).json({ message: 'All convener meeting attendance records deleted successfully' });
   } catch (error) {
-    console.error('Error deleting attendance records:', error);
-    res.status(500).send({ message: 'An error occurred while deleting attendance records' });
+    console.error('Error deleting all convener attendance records:', error);
+    res.status(500).json({ message: 'An error occurred while deleting all convener attendance records' });
+  }
+};
+
+const getTotalAttendance = async (req, res) => {
+  try {
+    // Count the number of attendance records where 'attended' is true
+    const totalAttendanceCount = await ConvenerMeetingAttendance.countDocuments({ attended: true });
+    
+    res.status(200).json({ totalAttendance: totalAttendanceCount });
+  } catch (error) {
+    console.error('Error fetching total attendance:', error);
+    res.status(500).json({ message: 'An error occurred while fetching total attendance' });
   }
 };
 
 
 module.exports = {
+  getTotalAttendance,
+  getTotalConveners,
   deleteAllAttendanceRecords,
   recordConvenerMeetingAttendance,
   fetchConveners,
