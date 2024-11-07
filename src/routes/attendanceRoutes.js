@@ -8,6 +8,6 @@ const {markAttendance,getAttendanceReport,deleteAllAttendance,getTotalAttendance
 router.post('/mark', markAttendance);
 router.get('/total', getTotalAttendance);
 router.get('/report', getAttendanceReport);
-router.delete('/attendance/deleteAll',deleteAllAttendance);
+router.delete('/subattendance/deleteAll',deleteAllAttendance);
 
 module.exports = router;

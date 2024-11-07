@@ -7,7 +7,7 @@ const { recordConvenerMeetingAttendance,getTotalConveners,getTotalAttendance, de
 router.post('/convener-meeting/attendance', recordConvenerMeetingAttendance);
 router.get('/conveners', fetchConveners);
 router.get('/execoreport', fetchConvenerAttendanceReport);
-router.delete('/attendance/deleteAll', deleteAllAttendanceRecords);
+router.delete('/convattendance/deleteAll', deleteAllAttendanceRecords);
 router.get('/totalconveners', getTotalConveners);
 router.get('/totalconvenerattendance', getTotalAttendance);
 
